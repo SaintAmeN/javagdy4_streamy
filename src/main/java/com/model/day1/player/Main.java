@@ -1133,45 +1133,12 @@ public class Main {
                 .collect(Collectors.toMap((arcade) -> arcade, arcade ->
                         arcade.getScoreList().stream().filter(score -> score.getGame() == Game.MARIO).count()))
                 .entrySet().stream().max(Entry.comparingByValue());
-
-        if (maxArcadeOptional.isPresent()) {
-            Entry<Arcade, Long> arcadeLongEntry = maxArcadeOptional.get();
-            System.out.println();
-            System.out.println(arcadeLongEntry.getKey().getName() + " miała :" + arcadeLongEntry.getValue() + " wpisów");
-        }
         // Polecenia:
         // 1. Posortuj i wypisz automaty po ilości rozegranych meczy
         // 2. Posortuj i wypisz automaty po ilości zapisanych wyników (ilość score)
         // 3. Znadjź i zwróć automat który ma najwięcej zapisanych wyników z gry Mario
         // 4. Znajdź i wypisz wszystkie automaty z Gdańska
         // 5. Znajdź wszystkie wyniki z Mario i wypisz nazwy użytkowników które wystąpiły na więcej niż jednym automacie.
-        List<String> namesList = arcades.stream()
-                .map(arcade -> arcade.getScoreList()
-                        .stream()
-                        .filter(score -> score.getGame() == Game.MARIO)
-                        .map(score -> score.getPlayerName()).distinct().collect(Collectors.toList())) // po tym zostaną tylko unikalne nazwy użytkowników w mario, wiele list.
-                .flatMap(List::stream)
-                .collect(Collectors.toList()); // teraz mamy jedną listę wszystkich imion.
-
-        List<String> namesThatComeUpTwiceOrMore = namesList.stream()
-                .filter(name -> Collections.frequency(namesList, name) > 1)
-                .collect(Collectors.toList());
-
-        System.out.println();
-        System.out.println("Nazwy użytkowników które wystąpiły na więcej niż jednym automacie: " + namesThatComeUpTwiceOrMore);
-
-        // teraz zrobię liczność wystąpień:
-        Map<String, Long> namesThatComeUpTwiceOrMoreMap = namesList.stream()
-                .filter(name -> Collections.frequency(namesList, name) > 1)
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet()
-                .stream()
-                .sorted(Entry.comparingByValue())
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e2, LinkedHashMap::new));
-
-        System.out.println();
-        System.out.println("Liczność wystąpień:");
-        namesThatComeUpTwiceOrMoreMap.entrySet().forEach(entry -> System.out.println(entry));
 
 
         // 6. Znajdź wyniki najlepszego gracza gry BARBIE_DESTRUCTION. Jeśli gracze mają tyle samo punktów to drugim kryterium jest czas. Im krótszy czas gry, tym wyżej powinien być gracz w rankingu.
