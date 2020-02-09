@@ -1,9 +1,8 @@
 package com.model.day1.company;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
@@ -483,7 +482,7 @@ public class Main {
 // 17. Wypisz ile łącznie kawy (Arabica i Roubsta) zostało kupionej w dni parzyste.
 //        company_17_arabica_robusta_even(companies);
 // 18. Zwróć Mapę (Map<Product, Set<Company>>) w której kluczem jest typ kawy (powinny być dwie, Arabica i Robusta) i wartością są listy firm które kupiły podaną kawę chociaż raz.
-//        company_18_mapa_kaw(companies);
+        company_18_mapa_kaw(companies);
 // 19. Zwróć firmę która w styczniu kupiła najwięcej paliwa (ropy)
 //        company_19_most_oil_january(companies);
 // 20. Zwróć firmę której proporcja wydanych pieniędzy do ilości pracowników jest najwyższa
@@ -499,9 +498,9 @@ public class Main {
 // 25. Zwróć ilość biur które wynajęte były w miesiącu lutym.
 //        company_25_rent_in_february(companies);
 // 26. Zwróć Mapę (Map<Company, Integer>). w mapie umieść wpisy Firma - > ilość biur które wynajęły w dowolnym okresie.
-//        company_26_company_and_offices(companies);
+        company_26_company_and_offices(companies);
 // 27. *Wypisz "Nazwa firmy: XYZ, ilość zakupionych telefonów apple: X" dla każdej firmy która kupiła telefon apple. Wypisy powinny być posortowane (na szczycie powinna być firma która kupiła ich najwięcej).
-//        company_27_apple_lovers(companies);
+        company_27_apple_lovers(companies);
 // 28. Znajdź firme która posiada siedzibę w więcej niż jednym mieście. Posortuj firmy po ilości siedzib, wypisz tylko te które mają więcej niż 1 siedzibę.
 //        company_28_rich_multi_city_companies(companies);
 // 29. Wypisz ilość kilogramów cukru zużywaną przez "Detroit Bakery"
@@ -518,5 +517,84 @@ public class Main {
 // 39. Wypisz jaki produkt poza paliwem cieszy się największą popularnością (zwróć go) (find first)
 // 40. Znajdź produkty które były kupowane zarówno w kilogramach jak i w sztukach
 // 40. Wymyśl 5 ciekawych zapytań i spróbuj je zrealizować. Najciekawsze polecenie otrzyma nagrodę-niespodziankę z Baltimore :P
+    }
+
+    // 27. *Wypisz "Nazwa firmy: XYZ, ilość zakupionych telefonów apple: X"
+    // dla każdej firmy która kupiła telefon apple. Wypisy powinny być posortowane
+    // (na szczycie powinna być firma która kupiła ich najwięcej).
+    private static void company_27_apple_lovers(List<Company> companies) {
+        Map<String, Integer> aplowcy = companies.stream()
+                .collect(Collectors.toMap(
+                        company -> company.getName(),
+                        company -> company.getPurchaseList()
+                                .stream()
+                                .filter(purchase -> purchase.getProduct().getName().equalsIgnoreCase("Apple Phone"))
+                                .mapToInt(purchase -> (int) purchase.getQuantity())
+                                .sum(),
+                        (e1, e2) -> e1 + e2
+                ))
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (integer, integer2) -> (integer + integer2), LinkedHashMap::new));
+        System.out.println("#####");
+        for (Map.Entry<String, Integer> entry : aplowcy.entrySet()) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+        }
+        System.out.println("#####");
+
+    }
+
+    // 26. Zwróć Mapę (Map<Company, Integer>). w mapie umieść wpisy Firma - > ilość biur
+    // które wynajęły w dowolnym okresie.
+    private static void company_26_company_and_offices(List<Company> companies) {
+        Map<String, Integer> offices = companies.stream()
+                .collect(Collectors.toMap(
+                        company -> company.getName(),
+                        company -> company.getPurchaseList()
+                                .stream()
+                                .filter(purchase -> purchase.getProduct().getName().equalsIgnoreCase("Office rent"))
+                                .mapToInt(purchase -> (int) purchase.getQuantity())
+                                .sum(),
+                        (e1, e2) -> {
+                            return e1 + e2;
+                        }
+                ));
+    }
+
+    // 18. Zwróć Mapę (Map<Product, Set<Company>>) w której kluczem jest typ kawy
+    // (powinny być dwie, Arabica i Robusta) i wartością są listy firm które kupiły
+    // podaną kawę chociaż raz.
+    private static void company_18_mapa_kaw(List<Company> companies) {
+        Set<Product> typyKaw = companies.stream()
+                .flatMap(company -> company.getPurchaseList().stream())
+                .map(purchase -> purchase.getProduct())
+                .filter(product -> product.getName().startsWith("Coffee,"))
+                .collect(Collectors.toSet());
+
+        Map<Product, Set<Company>> coffeeBuyers = typyKaw.stream()
+                .collect(Collectors.toMap(
+                        product -> product,
+                        p -> companies.stream()
+                                .filter(company -> company.getPurchaseList()
+                                        .stream()
+                                        .anyMatch(purchase -> purchase.getProduct() == p))
+                                .collect(Collectors.toSet()),
+                        (e1, e2) -> {
+                            Set<Company> s1 = new HashSet<>(e1);
+                            s1.addAll(e2);
+                            return s1;
+                        }));
+
+        for (Map.Entry<Product, Set<Company>> productSetEntry : coffeeBuyers.entrySet()) {
+            System.out.print(productSetEntry.getKey() + " ");
+            for (Company company : productSetEntry.getValue()) {
+                System.out.print(company.getName() + " ");
+            }
+            System.out.println();
+
+        }
+
+
     }
 }
